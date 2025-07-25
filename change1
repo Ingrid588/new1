@@ -1,0 +1,33 @@
+import os
+import time
+import hashlib
+
+TRACK_FILE = 'target.txt'        # 需要监控的文件
+LOG_FILE = 'change_log.txt'      # 变更日志文件
+CHECK_INTERVAL = 2               # 检查间隔（秒）
+
+def get_file_hash(filepath):
+    with open(filepath, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+def log_change(change_info):
+    with open(LOG_FILE, 'a') as log:
+        log.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {change_info}\n")
+
+def main():
+    if not os.path.exists(TRACK_FILE):
+        print(f"监控文件不存在：{TRACK_FILE}")
+        return
+    
+    last_hash = get_file_hash(TRACK_FILE)
+    log_change("初始记录，文件哈希：" + last_hash)
+    
+    while True:
+        time.sleep(CHECK_INTERVAL)
+        current_hash = get_file_hash(TRACK_FILE)
+        if current_hash != last_hash:
+            log_change(f"文件发生变更，新哈希：{current_hash}")
+            last_hash = current_hash
+
+if __name__ == "__main__":
+    main()
